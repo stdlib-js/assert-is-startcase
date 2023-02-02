@@ -31,7 +31,7 @@ limitations under the License.
 ## Usage
 
 ```javascript
-import isStartcase from 'https://cdn.jsdelivr.net/gh/stdlib-js/assert-is-startcase@deno/mod.js';
+import isStartcase from 'https://cdn.jsdelivr.net/gh/stdlib-js/assert-is-startcase@v0.0.1-deno/mod.js';
 ```
 
 #### isStartcase( value )
@@ -67,7 +67,7 @@ bool = isStartcase( 'Beep and Boop' );
 <!-- eslint no-undef: "error" -->
 
 ```javascript
-import isStartcase from 'https://cdn.jsdelivr.net/gh/stdlib-js/assert-is-startcase@deno/mod.js';
+import isStartcase from 'https://cdn.jsdelivr.net/gh/stdlib-js/assert-is-startcase@v0.0.1-deno/mod.js';
 
 var bool = isStartcase( 'Beep Boop' );
 // returns true
