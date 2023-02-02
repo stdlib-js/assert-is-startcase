@@ -31,6 +31,11 @@ limitations under the License.
 ## Usage
 
 ```javascript
+import isStartcase from 'https://cdn.jsdelivr.net/gh/stdlib-js/assert-is-startcase@esm/index.mjs';
+```
+The previous example will load the latest bundled code from the esm branch. Alternatively, you may load a specific version by loading the file from one of the [tagged bundles](https://github.com/stdlib-js/assert-is-startcase/tags). For example,
+
+```javascript
 import isStartcase from 'https://cdn.jsdelivr.net/gh/stdlib-js/assert-is-startcase@v0.0.1-esm/index.mjs';
 ```
 
@@ -72,7 +77,7 @@ bool = isStartcase( 'Beep and Boop' );
 <body>
 <script type="module">
 
-import isStartcase from 'https://cdn.jsdelivr.net/gh/stdlib-js/assert-is-startcase@v0.0.1-esm/index.mjs';
+import isStartcase from 'https://cdn.jsdelivr.net/gh/stdlib-js/assert-is-startcase@esm/index.mjs';
 
 var bool = isStartcase( 'Beep Boop' );
 // returns true
