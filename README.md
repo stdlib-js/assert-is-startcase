@@ -45,7 +45,7 @@ limitations under the License.
 To use the module as a general utility, install the module globally
 
 ```bash
-npm install -g @stdlib/assert-is-startcase
+npm install -g @stdlib/assert-is-startcase-cli
 ```
 
 </section>
