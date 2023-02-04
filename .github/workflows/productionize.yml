@@ -808,6 +808,11 @@ jobs:
           pkg=$(echo "$pkg" | sed -e 's/\@/\\\@/g')
           perl -0777 -i -pe "s/require\( \'\.\/\.\.\/lib\' \)/require\( \'$pkg\' \)/" ./cli/bin/cli
 
+          # Add implementation package as dependency:
+          version=$(npm view "$pkg" version)
+          jq --indent 2 ".dependencies[\"$pkg\"] = \"$version\"" ./cli/package.json > ./cli/package.json.tmp
+          mv ./cli/package.json.tmp ./cli/package.json
+
           # For all dependencies, check if they are required by the CLI (test/test.cli.js and bin/cli); if not, remove them:
           jq -r '.dependencies | keys[]' ./cli/package.json | while read -r dep; do
             dep=$(echo "$dep" | xargs)
@@ -953,3 +958,15 @@ jobs:
           git add README.md
           git commit -m "Auto-generated commit"
           git push "https://$GITHUB_ACTOR:$GITHUB_TOKEN@github.com/$SLUG.git" esm
+
+          git checkout -b cli origin/cli
+          sed -i -E "s/$ESCAPED/$ESCAPED@$VERSION/g" README.md
+          git add README.md
+          git commit -m "Update README.md for CLI branch $VERSION"
+          git tag -a $VERSION-cli -m "$VERSION-cli"
+          git push "https://$GITHUB_ACTOR:$GITHUB_TOKEN@github.com/$SLUG.git" $VERSION-cli
+
+          sed -i -E "s/$ESCAPED@$VERSION/$ESCAPED/g" README.md
+          git add README.md
+          git commit -m "Auto-generated commit"
+          git push "https://$GITHUB_ACTOR:$GITHUB_TOKEN@github.com/$SLUG.git" cli
