@@ -24,13 +24,89 @@ limitations under the License.
 
 > Test if a value is a startcase string.
 
+<section class="installation">
 
+## Installation
 
+```bash
+npm install @stdlib/assert-is-startcase
+```
 
+Alternatively,
 
+-   To load the package in a website via a `script` tag without installation and bundlers, use the [ES Module][es-module] available on the [`esm` branch][esm-url].
+-   If you are using Deno, visit the [`deno` branch][deno-url].
+-   For use in Observable, or in browser/node environments, use the [Universal Module Definition (UMD)][umd] build available on the [`umd` branch][umd-url].
 
+The [branches.md][branches-url] file summarizes the available branches and displays a diagram illustrating their relationships.
 
+</section>
 
+<section class="usage">
+
+## Usage
+
+```javascript
+var isStartcase = require( '@stdlib/assert-is-startcase' );
+```
+
+#### isStartcase( value )
+
+Tests if a `value` is a startcase `string` (i.e., the first character of each word is uppercase).
+
+```javascript
+var bool = isStartcase( 'Beep Boop' );
+// returns true
+
+bool = isStartcase( 'Beep and Boop' );
+// returns false
+```
+
+</section>
+
+<!-- /.usage -->
+
+<section class="notes">
+
+## Notes
+
+-   The function validates that a `value` is a `string`. For all other types, the function returns `false`.
+
+</section>
+
+<!-- /.notes -->
+
+<section class="examples">
+
+## Examples
+
+<!-- eslint no-undef: "error" -->
+
+```javascript
+var isStartcase = require( '@stdlib/assert-is-startcase' );
+
+var bool = isStartcase( 'Beep Boop' );
+// returns true
+
+bool = isStartcase( 'BeepBoop123' );
+// returns true
+
+bool = isStartcase( 'beep Boop' );
+// returns false
+
+bool = isStartcase( 'beep' );
+// returns false
+
+bool = isStartcase( 'beepBoop' );
+// returns false
+
+bool = isStartcase( null );
+// returns false
+```
+
+</section>
+
+<!-- /.examples -->
 
 * * *
 
@@ -91,7 +167,33 @@ Options:
 
 <!-- /.notes -->
 
+<section class="examples">
 
+### Examples
+
+```bash
+$ is-startcase BeepBoop
+true
+```
+
+To use as a [standard stream][standard-streams],
+
+```bash
+$ echo -n 'Beep Boop' | is-startcase
+true
+```
+
+By default, when used as a [standard stream][standard-streams], the implementation assumes newline-delimited data. To specify an alternative delimiter, set the `split` option.
+
+```bash
+$ echo -n 'beepBoop\tBEEP_BOOP' | is-startcase --split '\t'
+false
+true
+```
+
+</section>
+
+<!-- /.examples -->
 
 </section>
 
