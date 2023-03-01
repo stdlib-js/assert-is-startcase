@@ -34,6 +34,11 @@ on:
         type: boolean
         default: true
 
+  # Run workflow upon completion of `publish` workflow run:
+  workflow_run:
+    workflows: ["publish"]
+    types: [completed]
+
 # Concurrency group to prevent multiple concurrent executions:
 concurrency:
   group: productionize
@@ -94,10 +99,11 @@ jobs:
       # Change `@stdlib/string-format` to `@stdlib/error-tools-fmtprodmsg` in package.json if the former is a dependency, otherwise insert it as a dependency:
       - name: 'Update dependencies in package.json'
         run: |
+          PKG_VERSION=$(npm view @stdlib/error-tools-fmtprodmsg version)
           if grep -q '"@stdlib/string-format"' package.json; then
-            sed -i "s/\"@stdlib\/string-format\"/\"@stdlib\/error-tools-fmtprodmsg\"/g" package.json
+            sed -i "s/\"@stdlib\/string-format\": \"^.*\"/\"@stdlib\/error-tools-fmtprodmsg\": \"^$PKG_VERSION\"/g" package.json
           else
-            node -e "var pkg = require( './package.json' ); pkg.dependencies[ '@stdlib/error-tools-fmtprodmsg' ] = '^0.0.x'; require( 'fs' ).writeFileSync( 'package.json', JSON.stringify( pkg, null, 2 ) );"
+            node -e "var pkg = require( './package.json' ); pkg.dependencies[ '@stdlib/error-tools-fmtprodmsg' ] = '^$PKG_VERSION'; require( 'fs' ).writeFileSync( 'package.json', JSON.stringify( pkg, null, 2 ) );"
           fi
 
       # Configure git:
@@ -462,7 +468,6 @@ jobs:
       # Rewrite file contents:
       - name: 'Rewrite file contents'
         run: |
-
           # Replace links to other packages with links to the umd branch:
           find ./umd -type f -name '*.md' -print0 | xargs -0 sed -Ei "/\/tree\/main/b; /^\[@stdlib[^:]+: https:\/\/github.com\/stdlib-js\// s/(.*)/\\1\/tree\/umd/";
 
@@ -625,7 +630,6 @@ jobs:
       # Rewrite file contents:
       - name: 'Rewrite file contents'
         run: |
-
           # Replace links to other packages with links to the esm branch:
           find ./esm -type f -name '*.md' -print0 | xargs -0 sed -Ei "/\/tree\/main/b; /^\[@stdlib[^:]+: https:\/\/github.com\/stdlib-js\// s/(.*)/\\1\/tree\/esm/";
 
@@ -771,7 +775,10 @@ jobs:
           mkdir -p cli/docs cli/test
           cp README.md LICENSE CONTRIBUTORS NOTICE ./cli
           cp -r bin etc ./cli
-          cp -r test/test.cli.js test/fixtures ./cli/test
+          cp test/test.cli.js ./cli/test
+          if [ -d "test/fixtures" ]; then
+            cp -r test/fixtures ./cli/test
+          fi
           cp docs/usage.txt ./cli/docs
 
       # Install Node.js:
@@ -793,9 +800,12 @@ jobs:
         run: |
           # Define variable for package name:
           pkg="$(jq -r '.name' ./package.json)"
-          pkgDescription="$(jq -r '.description' ./package.json)"
           escapedPkg=$(echo "$pkg" | sed -e 's/\//\\\//g')
           escapedPkg=$(echo "$escapedPkg" | sed -e 's/\@/\\\@/g')
+
+          # Define variable for package description:
+          pkgDescription="$(jq -r '.description' ./package.json)"
+          pkgDescription="$(echo "$pkgDescription" | sed -e 's/^\([A-Z]\)/\L\1/')"
 
           # Remove sections:
           find ./cli -type f -name '*.md' -print0 | xargs -0 perl -0777 -i -pe "s/<section class=\"installation\">[^<]+<\/section>//;"
@@ -813,11 +823,11 @@ jobs:
           # Change heading levels:
           find ./cli -type f -name '*.md' -print0 | xargs -0 perl -0777 -i -pe "s/###/##/g"
 
-          # Append -cli to package name:
-          find ./cli -type f -name '*.md' -print0 | xargs -0 perl -0777 -i -pe "s/($escapedPkg)/\1-cli/g"
+          # Append -cli to package name unless it already ends with -cli:
+          find ./cli -type f -name '*.md' -print0 | xargs -0 perl -0777 -i -pe "s/(?<!\[)($escapedPkg)(?!-cli)/\1-cli/g"
 
           # Insert a link to the main package:
-          find ./cli -type f -name '*.md' -print0 | xargs -0 perl -0777 -i -pe "s/<section class=\"related\">/<section class=\"related\">\n\n## Related\n\n*   <span class=\"package-name\">[\`$escapedPkg\`][main-url]<\/span><span class=\"delimiter\">: <\/span><span class=\"description\">$pkgDescription<\/span>\n/"
+          find ./cli -type f -name '*.md' -print0 | xargs -0 perl -0777 -i -pe "s/<section class=\"related\">(?:\n\n\* \* \*\n\n## See Also\n\n)?/<section class=\"related\">\n\n## See Also\n\n-   <span class=\"package-name\">[\`$escapedPkg\`][$escapedPkg]<\/span><span class=\"delimiter\">: <\/span><span class=\"description\">$pkgDescription<\/span>\n/"
 
           # Create package.json file for cli branch:
           jq --indent 2 '.name = .name + "-cli" | {"name": .name, "version": .version, "description": .description, "license": .license, "author": .author, "contributors": .contributors, "bin": .bin, "homepage": .homepage, "repository": .repository, "bugs": .bugs, "dependencies": .dependencies, "devDependencies": .devDependencies, "keywords": .keywords, "funding": .funding}' package.json > ./cli/package.json
@@ -830,10 +840,10 @@ jobs:
           # Rewrite require of main module in bin/cli to depend on external package:
           perl -0777 -i -pe "s/require\( \'\.\/\.\.\/lib\' \)/require\( \'$escapedPkg\' \)/" ./cli/bin/cli
 
-          # For all dependencies, check if they are required by the CLI (test/test.cli.js and bin/cli); if not, remove them:
+          # For all dependencies, check if they are required by the CLI; if not, remove them:
           jq -r '.dependencies | keys[]' ./cli/package.json | while read -r dep; do
             dep=$(echo "$dep" | xargs)
-            if ! grep -q "$dep" ./cli/test/test.cli.js && ! grep -q "$dep" ./cli/bin/cli; then
+            if ! grep -q "$dep" ./cli/test/** && ! grep -q "$dep" ./cli/bin/**; then
               jq --indent 2 "del(.dependencies[\"$dep\"])" ./cli/package.json > ./cli/package.json.tmp
               mv ./cli/package.json.tmp ./cli/package.json
             fi
@@ -843,7 +853,7 @@ jobs:
               continue
             fi
             dep=$(echo "$dep" | xargs)
-            if ! grep -q "$dep" ./cli/test/test.cli.js && ! grep -q "$dep" ./cli/bin/cli; then
+            if ! grep -q "$dep" ./cli/test/** && ! grep -q "$dep" ./cli/bin/**; then
               jq --indent 2 "del(.devDependencies[\"$dep\"])" ./cli/package.json > ./cli/package.json.tmp
               mv ./cli/package.json.tmp ./cli/package.json
             fi
@@ -987,3 +997,11 @@ jobs:
           git add README.md
           git commit -m "Auto-generated commit"
           git push "https://$GITHUB_ACTOR:$GITHUB_TOKEN@github.com/$SLUG.git" cli
+
+      # Run publish workflow for CLI package:
+      - name: 'Run publish workflow for CLI package'
+        if: steps.check-if-bump.outputs.bump
+        env:
+          GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+        run: |
+          gh workflow run publish_cli.yml
