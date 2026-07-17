@@ -1,5 +1,5 @@
-"use strict";var s=function(r,i){return function(){return i||r((i={exports:{}}).exports,i),i.exports}};var e=s(function(q,t){
-var a=require('@stdlib/assert-is-string/dist').isPrimitive,c=require('@stdlib/string-base-startcase/dist');function n(r){return a(r)&&c(r)===r}t.exports=n
-});var u=e();module.exports=u;
+"use strict";var a=function(r,i){return function(){try{return i||r((i={exports:{}}).exports,i),i.exports}catch(s){throw (i=0, s)}};};var e=a(function(m,t){
+var c=require('@stdlib/assert-is-string/dist').isPrimitive,n=require('@stdlib/string-base-startcase/dist');function u(r){return c(r)&&n(r)===r}t.exports=u
+});var o=e();module.exports=o;
 /** @license Apache-2.0 */
 //# sourceMappingURL=index.js.map
