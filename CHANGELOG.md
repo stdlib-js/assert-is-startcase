@@ -4,7 +4,7 @@
 
 <section class="release" id="unreleased">
 
-## Unreleased (2026-09-10)
+## Unreleased (2026-11-03)
 
 <section class="commits">
 
@@ -12,6 +12,7 @@
 
 <details>
 
+-   [`78ad2fa`](https://github.com/stdlib-js/stdlib/commit/78ad2fa5dbb12ce808dec93197d5343745ff91b8) - **docs:** normalize trailing newlines in REPL help texts [(#16420)](https://github.com/stdlib-js/stdlib/pull/16420) _(by Philipp Burckhardt)_
 -   [`9ad27d6`](https://github.com/stdlib-js/stdlib/commit/9ad27d68a433072554c8340fd5ea86266ab487fb) - **docs:** fix TSDoc errors in `assert` declarations [(#12454)](https://github.com/stdlib-js/stdlib/pull/12454) _(by Philipp Burckhardt, Athan Reines)_
 
 </details>
